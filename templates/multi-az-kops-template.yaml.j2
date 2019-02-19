@@ -1,0 +1,142 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: {{ cluster_name }}
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://{{ cluster_s3_bucket_name }}/{{ cluster_name }}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-{{ REGION }}a
+      name: a
+    - instanceGroup: master-{{ REGION }}b
+      name: b
+    - instanceGroup: master-{{ REGION }}c
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-{{ REGION }}a
+      name: a
+    - instanceGroup: master-{{ REGION }}b
+      name: b
+    - instanceGroup: master-{{ REGION }}c
+      name: c
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.8.15
+  masterPublicName: {{ 'api.' + cluster_name }}
+  networkCIDR: {{ cluster_network_cidr }}
+  networking:
+    weave:
+      mtu: 8912
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+{% for subnet in subnets %}
+    - cidr: {{ subnet.cidr }}
+      name: {{ subnet.name }}
+      type: {{ subnet.type }}
+      zone: {{ subnet.zone }}
+{% endfor %}
+  topology:
+    dns:
+      type: Public
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: {{ cluster_name }}
+  name: master-{{ REGION }}a
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-{{ REGION }}a
+  role: Master
+  subnets:
+  - {{ REGION }}a
+
+---
+
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: {{ cluster_name }}
+  name: master-{{ REGION }}b
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-{{ REGION }}b
+  role: Master
+  subnets:
+  - {{ REGION }}b
+
+---
+
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: {{ cluster_name }}
+  name: master-{{ REGION }}c
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-{{ REGION }}c
+  role: Master
+  subnets:
+  - {{ REGION }}c
+
+---
+
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: {{ cluster_name }}
+  name: nodes
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - {{ REGION }}a
+  - {{ REGION }}b
+  - {{ REGION }}c

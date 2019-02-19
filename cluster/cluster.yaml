@@ -1,0 +1,167 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: test-python-framework.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://test-kops-cluster/test-python-framework.k8s.local
+  nonMasqueradeCIDR: 100.64.0.0/10
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-eu-central-1a
+      name: a
+    - instanceGroup: master-eu-central-1b
+      name: b
+    - instanceGroup: master-eu-central-1c
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-eu-central-1a
+      name: a
+    - instanceGroup: master-eu-central-1b
+      name: b
+    - instanceGroup: master-eu-central-1c
+      name: c
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.8.15
+  masterPublicName: api.test-python-framework.k8s.local
+  networkCIDR: 172.20.0.0/16
+  networking:
+    weave:
+      mtu: 8912
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+
+    - cidr: 172.20.32.0/19
+      name: eu-central-1a
+      type: Private
+      zone: eu-central-1a
+
+    - cidr: 172.20.64.0/19
+      name: eu-central-1b
+      type: Private
+      zone: eu-central-1b
+
+    - cidr: 172.20.96.0/19
+      name: eu-central-1c
+      type: Private
+      zone: eu-central-1c
+
+    - cidr: 172.20.0.0/22
+      name: utility-eu-central-1a
+      type: Utility
+      zone: eu-central-1a
+
+    - cidr: 172.20.4.0/22
+      name: utility-eu-central-1b
+      type: Utility
+      zone: eu-central-1b
+
+    - cidr: 172.20.8.0/22
+      name: utility-eu-central-1c
+      type: Utility
+      zone: eu-central-1c
+
+  topology:
+    dns:
+      type: Public
+    masters: private
+    nodes: private
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: test-python-framework.k8s.local
+  name: master-eu-central-1a
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-central-1a
+  role: Master
+  subnets:
+  - eu-central-1a
+
+---
+
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: test-python-framework.k8s.local
+  name: master-eu-central-1b
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-central-1b
+  role: Master
+  subnets:
+  - eu-central-1b
+
+---
+
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: test-python-framework.k8s.local
+  name: master-eu-central-1c
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-central-1c
+  role: Master
+  subnets:
+  - eu-central-1c
+
+---
+
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: test-python-framework.k8s.local
+  name: nodes
+spec:
+  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-08-17
+  machineType: t2.small
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  subnets:
+  - eu-central-1a
+  - eu-central-1b
+  - eu-central-1c

@@ -1,0 +1,68 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: {{ cluster_name }}
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://{{ cluster_s3_bucket_name }}/{{ cluster_name }}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-{{ REGION }}a
+      name: a
+    - instanceGroup: master-{{ REGION }}b
+      name: b
+    - instanceGroup: master-{{ REGION }}c
+      name: c
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-{{ REGION }}a
+      name: a
+    - instanceGroup: master-{{ REGION }}b
+      name: b
+    - instanceGroup: master-{{ REGION }}c
+      name: c
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.8.15
+  masterPublicName: {{ cluster.master_public_name | default('api.' + cluster_name) }}
+  networkCIDR: {{ kops_vpc_cidr }}
+  networking:
+    weave:
+      mtu: 8912
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+{% for subnet in (kops_private_subnets.keys() | sort) %}
+    - cidr: {{ kops_private_subnets[subnet].cidr }}
+      id: {{ kops_private_subnets[subnet].id }}
+      {# The NAT GW ID is taken from the public subnets equivilants -#}
+      egress: {{ kops_utility_subnets[subnet].nat_id }}
+      name: {{ kops_private_subnets[subnet].az }}
+      type: Private
+      zone: {{ kops_private_subnets[subnet].az }}
+{% endfor %}
+{% for subnet in (kops_utility_subnets.keys() | sort) %}
+    - cidr: {{ kops_utility_subnets[subnet].cidr }}
+      id: {{ kops_utility_subnets[subnet].id }}
+      name: utility-{{ kops_utility_subnets[subnet].az }}
+      type: Utility
+      zone: {{ kops_utility_subnets[subnet].az }}
+{% endfor %}
+  topology:
+    dns:
+      type: Public
+    masters: private
+    nodes: private
+

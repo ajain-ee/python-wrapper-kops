@@ -1,0 +1,3 @@
+Provider:
+  name: gce
+  provisioner: kops

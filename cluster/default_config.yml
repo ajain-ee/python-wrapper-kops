@@ -1,0 +1,50 @@
+kops:
+  provider:
+    name: aws
+    cluster:
+      profile: bcg-sandbox
+      name: test-python-framework.k8s.local
+      vpc-id: vpc-72dce919
+      s3-bucket: test-kops-cluster
+      networking: weave
+      topology: private
+      node-count: 1
+      node-size: t2.small
+      zones: eu-central-1a
+      master-size: t2.medium
+      master-zones: eu-central-1a
+      dns: public
+    additionalPolicies:
+      node:
+        [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "dynamodb:*"
+            ],
+            "Resource": ["*"]
+          },
+          {
+            "Effect" : "Allow",
+            "Action" : [
+              "logs:PutLogEvents",
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:DescribeLog*"
+            ],
+            "Resource" : ["*"]
+          }
+        ]
+      master:
+        [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "logs:PutLogEvents",
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:DescribeLog*"
+            ],
+            "Resource": ["*"]
+          }
+        ]
